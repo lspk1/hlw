@@ -23,9 +23,7 @@ RUN apt-get update \
 ADD https://raw.githubusercontent.com/christgau/wsdd/master/src/wsdd.py /usr/sbin/wsdd
 ADD https://github.com/qemus/virtiso/releases/download/v0.1.248/virtio-win-0.1.248.iso /run/drivers.iso
 
-# Copy scripts and assets
-COPY ./src /run/
-COPY ./assets /run/assets
+# Copy scripts and asse
 
 # Make scripts executable
 RUN chmod +x /run/*.sh && chmod +x /usr/sbin/wsdd
