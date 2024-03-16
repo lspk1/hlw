@@ -6,31 +6,31 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV GOTTY_TAG_VER v1.0.1
 
+# Install required packages including a virtual keyboard
 RUN apt-get -y update && \
-    apt-get install -y curl && \
-    curl -sLk https://github.com/yudai/gotty/releases/download/${GOTTY_TAG_VER}/gotty_linux_amd64.tar.gz \
-    | tar xzC /usr/local/bin && \
-    apt-get purge --auto-remove -y curl && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists*
+    apt-get install -y \
+        curl \
+        xserver-xorg-core \
+        xserver-xorg-input-all \
+        xserver-xorg-input-libinput \
+        xserver-xorg-input-evdev \
+        xserver-xorg-input-synaptics \
+        xserver-xorg-input-vmmouse \
+        xserver-xorg-input-wacom \
+        xdotool \
+        matchbox-keyboard \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY /run_gotty.sh /run_gotty.sh
+# Install gotty
+RUN curl -sLk https://github.com/yudai/gotty/releases/download/${GOTTY_TAG_VER}/gotty_linux_amd64.tar.gz \
+    | tar xzC /usr/local/bin
 
-RUN chmod 744 /run_gotty.sh
+# Set executable permissions for gotty
+RUN chmod +x /usr/local/bin/gotty
 
-# Additional part from previous Dockerfile
-RUN apt-get -y update && \
-    apt-get install -y curl && \
-    curl -sLk https://github.com/yudai/gotty/releases/download/${GOTTY_TAG_VER}/gotty_linux_amd64.tar.gz \
-    | tar xzC /usr/local/bin && \
-    apt-get purge --auto-remove -y curl && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists*
-
-COPY /run_gotty.sh /run_gotty.sh
-
-RUN chmod 744 /run_gotty.sh
-
+# Expose port 8080 for gotty
 EXPOSE 8080
 
-CMD ["/bin/bash","/run_gotty.sh"]
+# Start gotty with virtual keyboard
+CMD ["bash", "-c", "/usr/local/bin/gotty --permit-write --reconnect /bin/bash && matchbox-keyboard"]
