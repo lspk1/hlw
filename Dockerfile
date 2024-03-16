@@ -2,17 +2,7 @@ FROM ubuntu:14.04
 
 LABEL maintainer="wingnut0310 <wingnut0310@gmail.com>"
 
-# Install necessary packages for GUI support
-RUN apt-get update && \
-    apt-get install -y \
-    xfce4 \
-    xfce4-goodies \
-    xfonts-base \
-    x11vnc \
-    xvfb \
-    firefox \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Install necessary packages for GUI su
 
 # Set up environment variables
 ENV LANG=en_US.UTF-8
