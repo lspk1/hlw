@@ -1,26 +1,23 @@
-# Use an appropriate Windows base image
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+# Use a Linux base image compatible with Render
+FROM ubuntu:latest
 
 # Set metadata
 LABEL maintainer="Your Name <your.email@example.com>"
 
-# Set environment variables
-ENV DEBCONF_NOWARNINGS="yes" \
-    DEBIAN_FRONTEND="noninteractive" \
-    DEBCONF_NONINTERACTIVE_SEEN="true" \
-    RAM_SIZE="4G" \
-    CPU_CORES="2" \
-    DISK_SIZE="64G" \
-    VERSION="win11"
-
-# Expose ports
-EXPOSE 8006 3389
-
 # Install required packages
-RUN powershell -Command \
-    Set-ExecutionPolicy Bypass -Scope Process -Force; \
-    iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')); \
-    choco install -y curl 7zip dos2unix cabextract genisoimage
+RUN apt-get update \
+    && apt-get install -y \
+        curl \
+        p7zip \
+        wsdd \
+        samba \
+        wimtools \
+        dos2unix \
+        cabextract \
+        genisoimage \
+        libxml2-utils \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Download wsdd.py and drivers.iso
 ADD https://raw.githubusercontent.com/christgau/wsdd/master/src/wsdd.py /usr/sbin/wsdd
@@ -37,5 +34,8 @@ RUN chmod +x /run/*.sh && chmod +x /usr/sbin/wsdd
 ARG VERSION_ARG="0.0"
 RUN echo "$VERSION_ARG" > /run/version
 
+# Expose ports
+EXPOSE 8006 3389
+
 # Set entrypoint
-ENTRYPOINT ["C:/tini/tini.exe", "-s", "/run/entry.sh"]
+ENTRYPOINT ["/usr/bin/tini", "-s", "/run/entry.sh"]
