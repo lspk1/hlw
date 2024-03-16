@@ -1,39 +1,36 @@
-# Use a Linux base image compatible with Render
-FROM ubuntu:latest
+FROM ubuntu:14.04
 
-# Set metadata
-LABEL maintainer="Your Name <your.email@example.com>"
+LABEL maintainer="wingnut0310 <wingnut0310@gmail.com>"
 
-# Install required packages
-RUN apt-get update \
-    && apt-get install -y \
-        curl \
-        p7zip \
-        wsdd \
-        samba \
-        wimtools \
-        dos2unix \
-        cabextract \
-        genisoimage \
-        libxml2-utils \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV GOTTY_TAG_VER v1.0.1
 
-# Download wsdd.py and drivers.iso
-ADD https://raw.githubusercontent.com/christgau/wsdd/master/src/wsdd.py /usr/sbin/wsdd
-ADD https://github.com/qemus/virtiso/releases/download/v0.1.248/virtio-win-0.1.248.iso /run/drivers.iso
+RUN apt-get -y update && \
+    apt-get install -y curl && \
+    curl -sLk https://github.com/yudai/gotty/releases/download/${GOTTY_TAG_VER}/gotty_linux_amd64.tar.gz \
+    | tar xzC /usr/local/bin && \
+    apt-get purge --auto-remove -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists*
 
-# Copy scripts and asse
+COPY /run_gotty.sh /run_gotty.sh
 
-# Make scripts executable
-RUN chmod +x /run/*.sh && chmod +x /usr/sbin/wsdd
+RUN chmod 744 /run_gotty.sh
 
-# Set version argument
-ARG VERSION_ARG="0.0"
-RUN echo "$VERSION_ARG" > /run/version
+# Additional part from previous Dockerfile
+RUN apt-get -y update && \
+    apt-get install -y curl && \
+    curl -sLk https://github.com/yudai/gotty/releases/download/${GOTTY_TAG_VER}/gotty_linux_amd64.tar.gz \
+    | tar xzC /usr/local/bin && \
+    apt-get purge --auto-remove -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists*
 
-# Expose ports
-EXPOSE 8006 3389
+COPY /run_gotty.sh /run_gotty.sh
 
-# Set entrypoint
-ENTRYPOINT ["/usr/bin/tini", "-s", "/run/entry.sh"]
+RUN chmod 744 /run_gotty.sh
+
+EXPOSE 8080
+
+CMD ["/bin/bash","/run_gotty.sh"]
